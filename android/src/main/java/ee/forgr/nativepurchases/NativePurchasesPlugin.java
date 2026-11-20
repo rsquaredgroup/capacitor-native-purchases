@@ -301,11 +301,20 @@ public class NativePurchasesPlugin extends Plugin {
             // purchase, and to complete it, they should follow instructions that are
             // given to them. You can also choose to remind the user to complete the
             // purchase if you detect that it is still pending.
-            if (purchaseCall != null) {
-                purchaseCall.reject("Purchase is pending");
-            } else {
+            if (purchaseCall == null) {
                 Log.d(TAG, "purchaseCall is null for pending purchase");
+                return;
             }
+
+            JSObject ret = new JSObject();
+            ret.put("transactionId", purchase.getPurchaseToken());
+            ret.put("productIdentifier", purchase.getProducts().get(0));
+            ret.put("productType", purchaseCall.getString("productType", "inapp"));
+            ret.put("orderId", purchase.getOrderId());
+            ret.put("purchaseToken", purchase.getPurchaseToken());
+            ret.put("isAcknowledged", purchase.isAcknowledged());
+            ret.put("purchaseState", String.valueOf(purchase.getPurchaseState()));
+            purchaseCall.resolve(ret);
         } else {
             Log.d(TAG, "Purchase state is OTHER: " + purchase.getPurchaseState());
             // Handle any other error codes.
